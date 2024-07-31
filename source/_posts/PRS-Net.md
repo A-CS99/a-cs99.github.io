@@ -5,9 +5,9 @@ tags:
     - PRS-Net
     - CNN
     - Symmetry Detection
-    - Paper
+    - Thesis Note
 categories: 
-    - 论文笔记
+    - 论文复现
 ---
 
 > 论文原文：[PRS-Net: Planar Reflective Symmetry Detection Network](https://arxiv.org/abs/1910.06511v6)
