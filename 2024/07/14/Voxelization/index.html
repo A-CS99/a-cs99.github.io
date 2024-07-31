@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha256-XOqroi11tY4EFQMR9ZYwZWKj5ZXiftSx36RRuC3anlA=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"a-cs99.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.20.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="论文原文：PRS-Net: Planar Reflective Symmetry Detection Network   1 本文目的 探讨如何使用MATLAB将OBJ格式的三维模型体素化，以便于PRS-Net的输入  2 数据集及环境  ShapeNetCore.v2中的模型（OBJ格式，基于数据量需要对基础模型进行旋转变换） MATLAB R2022a   3 体素化效果 体素化前后的模型对">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PRS-Net中OBJ格式的体素化处理">
+<meta property="og:url" content="http://a-cs99.github.io/2024/07/14/Voxelization/">
+<meta property="og:site_name" content="ACS99的个人博客">
+<meta property="og:description" content="论文原文：PRS-Net: Planar Reflective Symmetry Detection Network   1 本文目的 探讨如何使用MATLAB将OBJ格式的三维模型体素化，以便于PRS-Net的输入  2 数据集及环境  ShapeNetCore.v2中的模型（OBJ格式，基于数据量需要对基础模型进行旋转变换） MATLAB R2022a   3 体素化效果 体素化前后的模型对">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://a-cs99.github.io/2024/07/14/Voxelization/raw_model.png">
+<meta property="og:image" content="http://a-cs99.github.io/2024/07/14/Voxelization/eg_volumn.png">
+<meta property="article:published_time" content="2024-07-14T15:25:15.000Z">
+<meta property="article:modified_time" content="2024-07-31T07:21:34.077Z">
+<meta property="article:author" content="Jiaming He">
+<meta property="article:tag" content="PRS-Net">
+<meta property="article:tag" content="Voxelization">
+<meta property="article:tag" content="MATLAB">
+<meta property="article:tag" content="3D Graphics">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://a-cs99.github.io/2024/07/14/Voxelization/raw_model.png">
+
+
+<link rel="canonical" href="http://a-cs99.github.io/2024/07/14/Voxelization/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://a-cs99.github.io/2024/07/14/Voxelization/","path":"2024/07/14/Voxelization/","title":"PRS-Net中OBJ格式的体素化处理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>PRS-Net中OBJ格式的体素化处理 | ACS99的个人博客</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">ACS99的个人博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">作者Jiaming He</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E6%9C%AC%E6%96%87%E7%9B%AE%E7%9A%84"><span class="nav-text"> 1 本文目的</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E6%95%B0%E6%8D%AE%E9%9B%86%E5%8F%8A%E7%8E%AF%E5%A2%83"><span class="nav-text"> 2 数据集及环境</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E4%BD%93%E7%B4%A0%E5%8C%96%E6%95%88%E6%9E%9C"><span class="nav-text"> 3 体素化效果</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF"><span class="nav-text"> 4 实现思路</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#41-%E8%AF%BB%E5%8F%96obj%E6%96%87%E4%BB%B6"><span class="nav-text"> 4.1 读取OBJ文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#42-%E6%97%8B%E8%BD%AC%E5%8F%98%E6%8D%A2%E5%A2%9E%E5%8A%A0%E6%A8%A1%E5%9E%8B%E6%95%B0%E9%87%8F"><span class="nav-text"> 4.2 旋转变换增加模型数量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#43-%E9%A1%B6%E7%82%B9%E5%9D%90%E6%A0%87%E5%AF%B9%E5%BA%94%E5%88%B0%E4%BD%93%E7%B4%A0%E5%9D%90%E6%A0%87"><span class="nav-text"> 4.3 顶点坐标对应到体素坐标</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#44-%E5%B0%86%E4%B8%89%E8%A7%92%E9%9D%A2%E7%9A%84%E7%B4%A2%E5%BC%95%E5%BD%A2%E5%BC%8F%E8%BD%AC%E6%8D%A2%E4%B8%BA%E9%A1%B6%E7%82%B9%E5%9D%90%E6%A0%87"><span class="nav-text"> 4.4 将三角面的索引形式转换为顶点坐标</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#45-%E7%BB%86%E5%88%86%E4%B8%89%E8%A7%92%E9%9D%A2"><span class="nav-text"> 4.5 细分三角面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#46-%E6%A0%B9%E6%8D%AE%E7%BB%86%E5%88%86%E5%90%8E%E7%9A%84%E9%A1%B6%E7%82%B9%E5%9D%90%E6%A0%87%E7%94%9F%E6%88%90%E4%BD%93%E7%B4%A0"><span class="nav-text"> 4.6 根据细分后的顶点坐标生成体素</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#47-%E4%BF%9D%E5%AD%98%E4%BD%93%E7%B4%A0%E5%8C%96%E7%BB%93%E6%9E%9C"><span class="nav-text"> 4.7 保存体素化结果</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiaming He</p>
+  <div class="site-description" itemprop="description">分享个人学习与实战经历</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://a-cs99.github.io/2024/07/14/Voxelization/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiaming He">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ACS99的个人博客">
+      <meta itemprop="description" content="分享个人学习与实战经历">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="PRS-Net中OBJ格式的体素化处理 | ACS99的个人博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PRS-Net中OBJ格式的体素化处理
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-07-14 23:25:15" itemprop="dateCreated datePublished" datetime="2024-07-14T23:25:15+08:00">2024-07-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-07-31 15:21:34" itemprop="dateModified" datetime="2024-07-31T15:21:34+08:00">2024-07-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%BA%E6%96%87%E5%A4%8D%E7%8E%B0/" itemprop="url" rel="index"><span itemprop="name">论文复现</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%BA%E6%96%87%E5%A4%8D%E7%8E%B0/MATLAB%E7%A8%8B%E5%BA%8F/" itemprop="url" rel="index"><span itemprop="name">MATLAB程序</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%BA%E6%96%87%E5%A4%8D%E7%8E%B0/MATLAB%E7%A8%8B%E5%BA%8F/%E4%B8%89%E7%BB%B4%E5%9B%BE%E5%BD%A2%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">三维图形学</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>论文原文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1910.06511v6">PRS-Net: Planar Reflective Symmetry Detection Network</a></p>
+</blockquote>
+<h1 id="1-本文目的"><a class="markdownIt-Anchor" href="#1-本文目的"></a> 1 本文目的</h1>
+<p>探讨如何使用MATLAB将OBJ格式的三维模型体素化，以便于PRS-Net的输入</p>
+<h1 id="2-数据集及环境"><a class="markdownIt-Anchor" href="#2-数据集及环境"></a> 2 数据集及环境</h1>
+<ul>
+<li>ShapeNetCore.v2中的模型（OBJ格式，基于数据量需要对基础模型进行旋转变换）</li>
+<li>MATLAB R2022a</li>
+</ul>
+<h1 id="3-体素化效果"><a class="markdownIt-Anchor" href="#3-体素化效果"></a> 3 体素化效果</h1>
+<p>体素化前后的模型对比如下：</p>
+<ul>
+<li>未体素化的模型：</li>
+</ul>
+  <img src="/2024/07/14/Voxelization/raw_model.png" class="" width="440" height="330" title="体素化前">
+<ul>
+<li>体素化后的模型：</li>
+</ul>
+  <img src="/2024/07/14/Voxelization/eg_volumn.png" class="" width="440" height="330" title="体素化后">
+<h1 id="4-实现思路"><a class="markdownIt-Anchor" href="#4-实现思路"></a> 4 实现思路</h1>
+<blockquote>
+<p>将三维模型转换为三维体素网格</p>
+</blockquote>
+<h2 id="41-读取obj文件"><a class="markdownIt-Anchor" href="#41-读取obj文件"></a> 4.1 读取OBJ文件</h2>
+<p>使用readOBJ函数读取OBJ文件，获取模型的顶点和三角面信息（体素化使用）</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 读取obj文件的顶点和三角面</span></span><br><span class="line"><span class="comment">% % vertices中元素为点坐标：[x,y,z]</span></span><br><span class="line"><span class="comment">% % faces中元素为面的三个点序号: [v1,v2,v3]</span></span><br><span class="line">[vertices, faces, ~] = readOBJ(obj_path);</span><br></pre></td></tr></table></figure>
+<p>同时使用meshlpsampling函数从OBJ表面随机选取一定数量的点作为采样点（无监督训练时计算误差使用）</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 从obj表面随机选取sample_num个点</span></span><br><span class="line"><span class="comment">% % surf_samples中元素为点坐标: [x,y,z]</span></span><br><span class="line">[surf_samples, ~] = meshlpsampling(obj_path, sample_num);</span><br></pre></td></tr></table></figure>
+<h2 id="42-旋转变换增加模型数量"><a class="markdownIt-Anchor" href="#42-旋转变换增加模型数量"></a> 4.2 旋转变换增加模型数量</h2>
+<p>为了增加数据集的多样性，对基础模型进行旋转变换，生成更多的模型<br />
+配置每个种类的目标模型数，从而计算平均到每个模型所需的模型变种数</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 配置每个种类的目标模型数 (数量不足时对原模型做变换)</span></span><br><span class="line">models_need = <span class="number">4000</span>;</span><br><span class="line"><span class="comment">% ...</span></span><br><span class="line"><span class="comment">% 计算平均到每个模型所需的模型变种数</span></span><br><span class="line">models_need_each = <span class="built_in">ceil</span>(models_need / <span class="built_in">length</span>(model_ids));</span><br></pre></td></tr></table></figure>
+<p>对每个模型的顶点进行旋转变换，生成更多的模型</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 生成随机的规范化旋转轴</span></span><br><span class="line">axis = <span class="built_in">rand</span>(<span class="number">1</span>,<span class="number">3</span>);</span><br><span class="line">axis = axis/norm(axis);</span><br><span class="line"><span class="comment">% 生成随机的旋转角度</span></span><br><span class="line"><span class="built_in">angle</span> = <span class="built_in">rand</span>(<span class="number">1</span>)*<span class="number">2</span>*<span class="built_in">pi</span>;</span><br><span class="line"><span class="comment">% 合成轴角表示</span></span><br><span class="line">rotate_axisangle = [axis, <span class="built_in">angle</span>];</span><br><span class="line"><span class="comment">% 生成旋转矩阵</span></span><br><span class="line">rotate_matrix = axang2rotm(rotate_axisangle);</span><br><span class="line"><span class="comment">% 旋转所有顶点 (三角面只和顶点序号相关，无需变换)</span></span><br><span class="line"><span class="comment">% % 取顶点矩阵的转置，以和旋转矩阵相乘</span></span><br><span class="line">r_vertices = rotate_matrix*vertices&#x27;;</span><br><span class="line">r_surf_samples = rotate_matrix*surf_samples;</span><br></pre></td></tr></table></figure>
+<h2 id="43-顶点坐标对应到体素坐标"><a class="markdownIt-Anchor" href="#43-顶点坐标对应到体素坐标"></a> 4.3 顶点坐标对应到体素坐标</h2>
+<p>OBJ原始模型的顶点坐标是规范化的，坐标值在[-0.5,0.5]之间<br />
+需要将其转换到体素坐标系，使得坐标值在[0,volumn_size]之间</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 将顶点的规范化坐标系平移缩放到体素对应的位置</span></span><br><span class="line">volumn_vertices = volumn_size*(r_vertices + <span class="number">0.5</span>) + <span class="number">0.5</span>;</span><br><span class="line">volumn_samples = volumn_size*(r_surf_samples + <span class="number">0.5</span>) + <span class="number">0.5</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="44-将三角面的索引形式转换为顶点坐标"><a class="markdownIt-Anchor" href="#44-将三角面的索引形式转换为顶点坐标"></a> 4.4 将三角面的索引形式转换为顶点坐标</h2>
+<p>OBJ模型的三角面是由三个顶点的索引组成的，将其转换为顶点坐标以便后续体素化处理</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">volumn</span> = <span class="title">model2volumn</span><span class="params">(model,volumn_size)</span></span></span><br><span class="line">    <span class="comment">% volumn_size必须为整数</span></span><br><span class="line">    volumn_size = <span class="built_in">round</span>(volumn_size);</span><br><span class="line">    volumn_size = [volumn_size, volumn_size, volumn_size];</span><br><span class="line">    <span class="comment">% 按列划分顶点和三角面</span></span><br><span class="line">    vertices = struct();</span><br><span class="line">    vertices.x = double(model.vertices(<span class="number">1</span>,:));</span><br><span class="line">    vertices.y = double(model.vertices(<span class="number">2</span>,:));</span><br><span class="line">    vertices.z = double(model.vertices(<span class="number">3</span>,:));</span><br><span class="line"></span><br><span class="line">    faces = struct();</span><br><span class="line">    faces.v1 = double(model.faces(:,<span class="number">1</span>));</span><br><span class="line">    faces.v2 = double(model.faces(:,<span class="number">2</span>));</span><br><span class="line">    faces.v3 = double(model.faces(:,<span class="number">3</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">% 得到double类型的顶点和三角面的顶点坐标</span></span><br><span class="line">    <span class="comment">% % double_vertices为N×3的矩阵</span></span><br><span class="line">    <span class="comment">% % face_vertices为结构体&#123;&#x27;v1&#x27;: N×3, &#x27;v2&#x27;: N×3, &#x27;v3&#x27;: N×3&#125;</span></span><br><span class="line">    <span class="comment">% % 上述N×3矩阵结构相同，每行为点坐标[x,y,z]</span></span><br><span class="line">    double_vertices = [vertices.x&#x27;,vertices.y&#x27;,vertices.z&#x27;];</span><br><span class="line">    face_vertices = struct();</span><br><span class="line">    face_vertices.v1 = double_vertices(faces.v1,:);</span><br><span class="line">    face_vertices.v2 = double_vertices(faces.v2,:);</span><br><span class="line">    face_vertices.v3 = double_vertices(faces.v3,:);</span><br><span class="line"></span><br><span class="line">    <span class="comment">% 将volumn_size转换为double，以便处理</span></span><br><span class="line">    volumn_size = double(volumn_size);</span><br><span class="line">    <span class="comment">% 体素化处理</span></span><br><span class="line">    volumn = process_model(face_vertices, volumn_size);</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h2 id="45-细分三角面"><a class="markdownIt-Anchor" href="#45-细分三角面"></a> 4.5 细分三角面</h2>
+<p>将三角面细分为更小的三角面，使得每个三角面的边长不超过0.5个体素<br />
+从而得到足够精细的体素化模型</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">face_vertices_splited</span> = <span class="title">split_faces</span><span class="params">(face_vertices)</span></span></span><br><span class="line">    splited_faces = struct(<span class="string">&#x27;v1&#x27;</span>,[],<span class="string">&#x27;v2&#x27;</span>,[],<span class="string">&#x27;v3&#x27;</span>,[]);</span><br><span class="line">    <span class="keyword">while</span>(~<span class="built_in">isempty</span>(face_vertices.v1))</span><br><span class="line">        <span class="built_in">disp</span>([<span class="string">&#x27;remain faces: &#x27;</span>, num2str(<span class="built_in">length</span>(face_vertices.v1))]);</span><br><span class="line">        <span class="comment">% 距离矩阵dist，每列分别代表一个边距离[(v1-v2),(v2-v3),(v1-v3)]，初始化为全零矩阵</span></span><br><span class="line">        dist = <span class="built_in">zeros</span>(<span class="built_in">length</span>(face_vertices.v1(:,<span class="number">1</span>)),<span class="number">3</span>);</span><br><span class="line">        <span class="comment">% 分别计算x^2，y^2，z^2并求和，得到距离</span></span><br><span class="line">        <span class="keyword">for</span> <span class="built_in">i</span>=<span class="number">1</span>:<span class="number">3</span></span><br><span class="line">            dist(:,<span class="number">1</span>) = dist(:,<span class="number">1</span>) + (face_vertices.v1(:,<span class="built_in">i</span>)-face_vertices.v2(:,<span class="built_in">i</span>)).^<span class="number">2</span>;</span><br><span class="line">            dist(:,<span class="number">2</span>) = dist(:,<span class="number">2</span>) + (face_vertices.v2(:,<span class="built_in">i</span>)-face_vertices.v3(:,<span class="built_in">i</span>)).^<span class="number">2</span>;</span><br><span class="line">            dist(:,<span class="number">3</span>) = dist(:,<span class="number">3</span>) + (face_vertices.v1(:,<span class="built_in">i</span>)-face_vertices.v3(:,<span class="built_in">i</span>)).^<span class="number">2</span>;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        <span class="comment">% 得到三边最大值，构成列向量</span></span><br><span class="line">        maxdist = <span class="built_in">max</span>(dist,[],<span class="number">2</span>);</span><br><span class="line">        <span class="comment">% 得到最大边长大于0.5个体素的三角面，在can_split列向量对应行标记为1</span></span><br><span class="line">        can_split = maxdist &gt; <span class="number">0.5</span>;</span><br><span class="line">        splited_faces.v1 = [splited_faces.v1;face_vertices.v1(~can_split,:)];</span><br><span class="line">        splited_faces.v2 = face_vertices.v2(~can_split,:);</span><br><span class="line">        splited_faces.v3 = face_vertices.v3(~can_split,:);</span><br><span class="line">        <span class="comment">% 更新face_vertices和dist，去除无法再分割的三角面</span></span><br><span class="line">        face_vertices_temp = face_vertices;</span><br><span class="line">        face_vertices_temp.v1 = face_vertices.v1(can_split,:);</span><br><span class="line">        face_vertices_temp.v2 = face_vertices.v2(can_split,:);</span><br><span class="line">        face_vertices_temp.v3 = face_vertices.v3(can_split,:);</span><br><span class="line">        face_vertices = face_vertices_temp;</span><br><span class="line">        dist = dist(can_split,:);</span><br><span class="line">        <span class="comment">% 计算仍能分割的三角面的三边中点</span></span><br><span class="line">        mid_vertices = struct();</span><br><span class="line">        <span class="keyword">for</span> <span class="built_in">i</span>=<span class="number">1</span>:<span class="number">3</span></span><br><span class="line">            mid_vertices.v12(:,<span class="built_in">i</span>) = (face_vertices.v1(:,<span class="built_in">i</span>)+face_vertices.v2(:,<span class="built_in">i</span>))/<span class="number">2</span>;</span><br><span class="line">            mid_vertices.v23(:,<span class="built_in">i</span>) = (face_vertices.v2(:,<span class="built_in">i</span>)+face_vertices.v3(:,<span class="built_in">i</span>))/<span class="number">2</span>;</span><br><span class="line">            mid_vertices.v13(:,<span class="built_in">i</span>) = (face_vertices.v1(:,<span class="built_in">i</span>)+face_vertices.v3(:,<span class="built_in">i</span>))/<span class="number">2</span>;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        <span class="comment">% 计算得到各边最长的三角面</span></span><br><span class="line">        max_v12 = [dist(:,<span class="number">1</span>) &gt;= dist(:,<span class="number">2</span>) &amp; dist(:,<span class="number">1</span>) &gt;= dist(:,<span class="number">3</span>)];</span><br><span class="line">        max_v23 = [dist(:,<span class="number">2</span>) &gt;= dist(:,<span class="number">1</span>) &amp; dist(:,<span class="number">2</span>) &gt;= dist(:,<span class="number">3</span>) &amp; ~max_v12];</span><br><span class="line">        max_v13 = [dist(:,<span class="number">3</span>) &gt;= dist(:,<span class="number">1</span>) &amp; dist(:,<span class="number">3</span>) &gt;= dist(:,<span class="number">2</span>) &amp; ~max_v12 &amp; ~max_v23];</span><br><span class="line">        <span class="comment">% 左替换最长边结点为中点</span></span><br><span class="line">        left_split = face_vertices;</span><br><span class="line">        left_split.v1(max_v12,:) = mid_vertices.v12(max_v12,:);</span><br><span class="line">        left_split.v2(max_v23,:) = mid_vertices.v23(max_v23,:);</span><br><span class="line">        left_split.v1(max_v13,:) = mid_vertices.v13(max_v13,:);</span><br><span class="line">        <span class="comment">% 右替换最长边结点为中点</span></span><br><span class="line">        right_split = face_vertices;</span><br><span class="line">        right_split.v2(max_v12,:) = mid_vertices.v12(max_v12,:);</span><br><span class="line">        right_split.v3(max_v23,:) = mid_vertices.v23(max_v23,:);</span><br><span class="line">        right_split.v3(max_v13,:) = mid_vertices.v13(max_v13,:);</span><br><span class="line">        <span class="comment">% 拼接左右替换</span></span><br><span class="line">        face_vertices.v1 = [left_split.v1;right_split.v1];</span><br><span class="line">        face_vertices.v2 = [left_split.v2;right_split.v2];</span><br><span class="line">        face_vertices.v3 = [left_split.v3;right_split.v3];</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    face_vertices_splited = splited_faces;</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h2 id="46-根据细分后的顶点坐标生成体素"><a class="markdownIt-Anchor" href="#46-根据细分后的顶点坐标生成体素"></a> 4.6 根据细分后的顶点坐标生成体素</h2>
+<p>根据细分后的顶点坐标生成体素，将体素坐标转换为线性索引（提高性能）<br />
+从而赋值给体素矩阵，得到体素化后的模型</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">volumn</span> = <span class="title">process_model</span><span class="params">(face_vertices, volumn_size)</span></span></span><br><span class="line">    <span class="comment">% 生成空体素</span></span><br><span class="line">    volumn = <span class="built_in">false</span>(volumn_size);</span><br><span class="line">    <span class="comment">% 细分三角面</span></span><br><span class="line">    face_vertices_splited = split_faces(face_vertices);</span><br><span class="line">    <span class="comment">% 拼接顶点坐标矩阵，并去除重复行</span></span><br><span class="line">    splited_vertices = [face_vertices_splited.v1;face_vertices_splited.v2;face_vertices_splited.v3];</span><br><span class="line">    splited_vertices = unique(splited_vertices, <span class="string">&#x27;rows&#x27;</span>, <span class="string">&#x27;stable&#x27;</span>);</span><br><span class="line">    <span class="comment">% 得到点坐标对应的体素坐标</span></span><br><span class="line">    voxel_vertices = [<span class="built_in">floor</span>(splited_vertices(:,<span class="number">1</span>))+<span class="number">1</span>,<span class="built_in">floor</span>(splited_vertices(:,<span class="number">2</span>))+<span class="number">1</span>,<span class="built_in">floor</span>(splited_vertices(:,<span class="number">3</span>))+<span class="number">1</span>];</span><br><span class="line">    voxel_vertices = unique(voxel_vertices, <span class="string">&#x27;rows&#x27;</span>, <span class="string">&#x27;stable&#x27;</span>);</span><br><span class="line">    <span class="comment">% 分别对 voxel_vertices 的每一列应用边界限制</span></span><br><span class="line">    voxel_vertices(:,<span class="number">1</span>) = <span class="built_in">max</span>(<span class="built_in">min</span>(voxel_vertices(:,<span class="number">1</span>), volumn_size(<span class="number">1</span>)), <span class="number">1</span>);</span><br><span class="line">    voxel_vertices(:,<span class="number">2</span>) = <span class="built_in">max</span>(<span class="built_in">min</span>(voxel_vertices(:,<span class="number">2</span>), volumn_size(<span class="number">2</span>)), <span class="number">1</span>);</span><br><span class="line">    voxel_vertices(:,<span class="number">3</span>) = <span class="built_in">max</span>(<span class="built_in">min</span>(voxel_vertices(:,<span class="number">3</span>), volumn_size(<span class="number">3</span>)), <span class="number">1</span>);</span><br><span class="line">    <span class="comment">% 将向量转换为线性索引，利用索引为对应体素位赋值</span></span><br><span class="line">    linear_indices = <span class="built_in">sub2ind</span>(<span class="built_in">size</span>(volumn), voxel_vertices(:,<span class="number">1</span>), voxel_vertices(:,<span class="number">2</span>), voxel_vertices(:,<span class="number">3</span>));</span><br><span class="line">    volumn(linear_indices) = <span class="built_in">true</span>;</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h2 id="47-保存体素化结果"><a class="markdownIt-Anchor" href="#47-保存体素化结果"></a> 4.7 保存体素化结果</h2>
+<p>得到体素化后的模型，可以将其保存为MAT文件，以便PRS-Net的输入</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 将顶点和三角面组合为结构体</span></span><br><span class="line">model = struct();</span><br><span class="line">model.vertices = volumn_vertices;</span><br><span class="line">model.faces = faces;</span><br><span class="line">volumn = model2volumn(model, volumn_size);</span><br><span class="line"><span class="comment">% 将所需变量保存</span></span><br><span class="line">save_name = [save_path, <span class="string">&#x27;/&#x27;</span>, model_ids&#123;<span class="built_in">j</span>&#125;, <span class="string">&#x27;_r&#x27;</span>, num2str(k), <span class="string">&#x27;.mat&#x27;</span>];</span><br><span class="line">save(save_name, <span class="string">&quot;volumn&quot;</span>, <span class="string">&quot;volumn_vertices&quot;</span>, <span class="string">&quot;volumn_samples&quot;</span>, <span class="string">&quot;faces&quot;</span>, <span class="string">&quot;rotate_axisangle&quot;</span>, <span class="string">&quot;voxel_centers&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/PRS-Net/" rel="tag"># PRS-Net</a>
+              <a href="/tags/Voxelization/" rel="tag"># Voxelization</a>
+              <a href="/tags/MATLAB/" rel="tag"># MATLAB</a>
+              <a href="/tags/3D-Graphics/" rel="tag"># 3D Graphics</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/07/06/PRS-Net/" rel="prev" title="PRS-Net笔记">
+                  <i class="fa fa-angle-left"></i> PRS-Net笔记
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Jiaming He</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+  <a href="https://github.com/A-CS99" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+
+
+
+</body>
+</html>
