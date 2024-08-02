@@ -1,6 +1,6 @@
 ---
 title: PRS-Net中OBJ格式的体素化处理
-date: 2024-07-14 23:25:15
+date: 2024-07-23 23:25:15
 tags:
     - PRS-Net
     - Voxelization
@@ -8,8 +8,8 @@ tags:
     - 3D Graphics
 categories:
     - 论文复现
-    - MATLAB程序
     - 三维图形学
+    - MATLAB程序
 ---
 
 > 论文原文：[PRS-Net: Planar Reflective Symmetry Detection Network](https://arxiv.org/abs/1910.06511v6)

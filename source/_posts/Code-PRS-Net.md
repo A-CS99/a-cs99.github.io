@@ -9,8 +9,8 @@ tags:
     - 3D Graphics
 categories:
     - 论文复现
-    - Python程序
     - 三维图形学
+    - Python程序
 ---
 
 > 论文原文：[PRS-Net: Planar Reflective Symmetry Detection Network](https://arxiv.org/abs/1910.06511v6)
